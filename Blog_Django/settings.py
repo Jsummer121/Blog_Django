@@ -86,6 +86,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "user.Users"
 
 # 配置redis
 CACHES = {
