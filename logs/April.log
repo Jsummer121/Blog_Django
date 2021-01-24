@@ -1,0 +1,4 @@
+INFO 2021-01-24 13:08:52,160 autoreload 617 Watching for file changes with StatReloader
+INFO 2021-01-24 13:09:01,849 basehttp 157 "GET / HTTP/1.1" 200 16299
+WARNING 2021-01-24 13:09:02,222 basehttp 157 "GET /static/admin/css/fonts.css HTTP/1.1" 404 1688
+INFO 2021-01-24 13:09:02,796 basehttp 157 "GET /favicon.ico HTTP/1.1" 200 16299
