@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="阿里云（summer）" deleteMissingItems="true" createEmptyFolders="true" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Blog_Django(aliyun)" deleteMissingItems="true" createEmptyFolders="true" autoUploadExternalChanges="true" showAutoUploadSettingsWarning="false">
     <serverData>
       <paths name="Blog_Django(aliyun)">
         <serverdata>
@@ -12,7 +12,7 @@
       <paths name="阿里云（summer）">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/summer/DjangoTest" local="$PROJECT_DIR$/../DjangoModel" />
+            <mapping deploy="/" local="$PROJECT_DIR$/../DjangoModel" web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'news',
     'user',
+    'verifications',
 ]
 
 MIDDLEWARE = [
@@ -90,9 +91,18 @@ AUTH_USER_MODEL = "user.Users"
 
 # 配置redis
 CACHES = {
+    # 配置默认的库
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    # 配置缓存uuid图片的库
+    'verify_codes': {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

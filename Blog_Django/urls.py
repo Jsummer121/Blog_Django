@@ -17,4 +17,5 @@ from django.urls import path, include
 
 urlpatterns = [path("", include("news.urls")),
                path("user/", include("user.urls")),
+               path("", include("verifications.urls")),
 ]
