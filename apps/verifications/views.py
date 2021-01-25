@@ -1,8 +1,10 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views import View
+from user.models import Users
 
 from utils.captcha.captcha import captcha
+from utils.res_code import to_json_data
 from django_redis import get_redis_connection
 import logging
 
@@ -24,3 +26,14 @@ class ImageCode(View):
 
 		logger.info("IMAGE_CODE {}".format(text))
 		return HttpResponse(content=image, content_type="image/jpg")
+
+
+# 用户名校验
+class UsernameView(View):
+	def get(self, request, username):
+		data = {
+			"username": username,
+			"count": Users.objects.filter(username=username).count(),
+		}
+		# return JsonResponse({"data": data})
+		return to_json_data(data=data)
