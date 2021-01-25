@@ -37,3 +37,13 @@ class UsernameView(View):
 		}
 		# return JsonResponse({"data": data})
 		return to_json_data(data=data)
+
+
+# 手机号校验
+class MobileView(View):
+	def get(self, request, mobile):
+		data = {
+			"mobile": mobile,
+			"count": Users.objects.filter(mobile=mobile).count()
+		}
+		return to_json_data(data=data)

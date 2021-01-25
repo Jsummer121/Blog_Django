@@ -1,12 +1,23 @@
 // @Auther:Summer
 $(function () {
     let $img = $(".form-item .captcha-graph-img img"); // 获取图像
-
-    // let $imgCodeText = $('#input_captcha');
     let $username = $("#user_name");  // get username by id
+    let $mobile = $("#mobile"); // get mobile by id
 
-    generate()
-    $img.click(generate);
+
+
+    generate()  // auto create the first img
+    $img.click(generate);  // run generate when img clicked
+
+    // blur,触发失去焦点事件
+    $username.blur(function () {
+        fn_check_username()
+    });
+    $mobile.blur(function () {
+        fn_check_mobile()
+    });
+
+    // the fun to send url to get img
     function generate() {
         sImageCodeId = generateUUID();
         let imageCodeUrl = '/image_code/' + sImageCodeId + '/';
@@ -14,7 +25,7 @@ $(function () {
         $img.attr("src", imageCodeUrl);
     }
 
-    // 生成图片UUID验证码
+    // the fun to create uuid_code
     function generateUUID() {
     let d = new Date().getTime();
     if (window.performance && typeof window.performance.now === "function") {
@@ -28,12 +39,7 @@ $(function () {
     return uuid;
     }
 
-    // blur,触发失去焦点事件
-    $username.blur(function () {
-        fn_check_username()
-    })
-
-    // check the username weather register
+    // check the username whether register
     function fn_check_username() {
         // get data
         let $sUsername = $username.val();
@@ -66,6 +72,40 @@ $(function () {
             function () {
                 message.showError("服务器超时，请重试！")
             }
-        )
+        );
     }
+
+    // check the mobile whether register
+    function fn_check_mobile() {
+        let $sMobile = $mobile.val() // get data
+
+        // check mobile whether null
+        if ($sMobile === ""){
+            message.showError("手机号不能为空");
+            return;
+        }
+
+        // use re to check mobile
+        if (!(/^1[3-9]\d{9}$/).test($sMobile)){
+            message.showError("手机号格式错误，请重新输入")
+            return;
+        }
+
+        // send sjax
+        $.ajax({
+            url: "/mobiles/" + $sMobile + "/",
+            type: "GET",
+            dataType: "json"
+        }).done(function (res) {
+            if(res.data.count !== 0){
+                message.showError("手机号已注册，请重新输入")
+            }else{
+                message.showSuccess("手机号可以正常使用")
+            }
+        }).fail(function () {
+                message.showError("服务器超时，请重试！")
+        })
+    }
+
+
 })
