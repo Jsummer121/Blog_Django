@@ -3,6 +3,9 @@ $(function () {
     let $img = $(".form-item .captcha-graph-img img"); // 获取图像
     let $username = $("#user_name");  // get username by id
     let $mobile = $("#mobile"); // get mobile by id
+    let $smsCodeBtn = $(".form-item .sms-captcha"); //get sms btn
+    let $imageCodeText = $("#input_captcha");  // get image code text
+    let $mobileReturnVal = ""; // get mobile return val
 
 
 
@@ -14,7 +17,7 @@ $(function () {
         fn_check_username()
     });
     $mobile.blur(function () {
-        fn_check_mobile()
+        $mobileReturnVal = fn_check_mobile();
     });
 
     // the fun to send url to get img
@@ -77,35 +80,94 @@ $(function () {
 
     // check the mobile whether register
     function fn_check_mobile() {
-        let $sMobile = $mobile.val() // get data
+        let sMobile = $mobile.val(); // get data
+        let sReturnValue = "";
 
         // check mobile whether null
-        if ($sMobile === ""){
+        if (sMobile === ""){
             message.showError("手机号不能为空");
-            return;
+            return sReturnValue
         }
 
         // use re to check mobile
-        if (!(/^1[3-9]\d{9}$/).test($sMobile)){
+        if (!(/^1[3-9]\d{9}$/).test(sMobile)){
             message.showError("手机号格式错误，请重新输入")
-            return;
+            return sReturnValue
         }
 
         // send sjax
         $.ajax({
-            url: "/mobiles/" + $sMobile + "/",
+            url: "/mobiles/" + sMobile + "/",
             type: "GET",
-            dataType: "json"
+            dataType: "json",
+            async: false
         }).done(function (res) {
             if(res.data.count !== 0){
                 message.showError("手机号已注册，请重新输入")
             }else{
-                message.showSuccess("手机号可以正常使用")
+                message.showSuccess("手机号可以正常使用");
+                sReturnValue = "success"
             }
         }).fail(function () {
-                message.showError("服务器超时，请重试！")
-        })
+            message.showError("服务器超时，请重试！")
+        });
+        return sReturnValue;
     }
 
+    // send sms
+    $smsCodeBtn.click(function () {
+        // check mobile
+        if ($mobileReturnVal !== "success"){
+            return;
+        }
+
+        // check imgCode
+        let text = $imageCodeText.val() // get imagecode
+        if (!text){
+            message.showError("请输入验证码");
+            return;
+        }
+
+        // check imgUuid
+        if (!sImageCodeId){
+            message.showError("图形uuid为空");
+            return;
+        }
+
+        let dataParams = {
+            "mobile": $mobile.val(),
+            "text": text,
+            "image_code_id":sImageCodeId,
+        }
+        // send ajax
+        $.ajax({
+            url: "/sms_code/",
+            type: "POST",
+            data: JSON.stringify(dataParams),
+            dataType: "json"
+        }).done(function (res) {
+            if (res.errno === "0") {
+                // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
+                message.showSuccess('短信验证码发送成功');
+                let num = 60;
+                // 设置一个计时器
+                let t = setInterval(function () {
+                    if (num === 1) {
+                        // 如果计时器到最后, 清除计时器对象
+                        clearInterval(t);
+                        // 将点击获取验证码的按钮展示的文本恢复成原始文本
+                        $smsCodeBtn.html("重新发送验证码");
+                    } else {
+                        num -= 1;
+                        // 展示倒计时信息
+                        $smsCodeBtn.html(num + "秒");
+                    }
+                }, 1000);
+        } else {
+            message.showError(res.errmsg);
+        }}).fail(function(){
+          message.showError('服务器超时，请重试！');
+        });
+    })
 
 })
