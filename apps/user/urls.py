@@ -6,6 +6,7 @@ from . import views
 app_name = "user"
 
 urlpatterns = [
-	path("login/", views.login, name="login"),
+	path("login/", views.LoginView.as_view(), name="login"),
 	path("register/", views.RegistarView.as_view(), name="register"),
+	path("findpwd/", views.FindPswView.as_view(), name="findpwd"),
 ]

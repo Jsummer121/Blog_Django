@@ -188,7 +188,6 @@ $(function () {
         let sPasswordRepeat = $("input[name=password_repeat]").val();
         let sMobile = $mobile.val();
         let sSmsCode = $("input[name=sms_captcha]").val();
-        console.log(sUsername,sPassword,sPasswordRepeat,sMobile,sSmsCode)
 
         // check moble
         if ($mobileReturnVal !== "success"){

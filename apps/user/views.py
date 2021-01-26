@@ -3,7 +3,7 @@ from django.views import View
 from django.contrib.auth import login
 
 import json
-from .forms import RegisterForm
+from .forms import RegisterForm, ChangePswForm
 from utils.res_code import to_json_data, Code, error_map
 from .models import Users
 
@@ -25,7 +25,7 @@ class RegistarView(View):
 		return render(request, "users/register.html")
 
 	def post(self, request):
-		json_data = request.body()
+		json_data = request.body
 		if not json_data:
 			return to_json_data(errno=Code.PARAMERR, errmsg=[error_map[Code.PARAMERR]])
 		data_dict = json.loads(json_data.decode('utf8'))
@@ -42,5 +42,31 @@ class RegistarView(View):
 			error_map_list = []
 			for item in form.errors.values():
 				error_map_list.append(item[0])
+			err_str = "/".join(error_map_list)
+			return to_json_data(errno=Code.PARAMERR, errmsg=err_str)
+
+
+class FindPswView(View):
+	def get(self, request):
+		return render(request, 'users/findpsw.html')
+
+	def post(self, request):
+		json_data = request.body
+		if not json_data:
+			return to_json_data(errno=Code.PARAMERR, errmsg=[error_map[Code.PARAMERR]])
+		data_dict = json.loads(json_data.decode("utf8"))
+		form = ChangePswForm(data=data_dict)
+		if form.is_valid():
+			mobile = form.cleaned_data.get("mobile")
+			password = form.cleaned_data.get("password")
+			user = Users.objects.get(mobile=mobile)
+			user.password = password
+			user.save()
+			return to_json_data(errmsg="密码修改成功")
+
+		else:
+			error_map_list = []
+			for item in form.errors.values():
+				error_map_list.append(item)
 			err_str = "/".join(error_map_list)
 			return to_json_data(errno=Code.PARAMERR, errmsg=err_str)
