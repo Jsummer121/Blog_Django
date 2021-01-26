@@ -108,5 +108,3 @@ class ChangePswForm(forms.Form):
         real_sms = redis_conn.get(sms_fmt)
         if (not real_sms) or (sms_text != real_sms.decode('utf-8')):
             raise forms.ValidationError("短信验证码错误")
-
-

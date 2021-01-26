@@ -9,8 +9,10 @@ from .models import Users
 
 
 class LoginView(View):
-	def get(self, request):
-		return render(request, "users/login.html")
+    def get(self, request):
+        """
+        """
+        return render(request, 'users/login.html')
 
 
 class RegistarView(View):
@@ -60,7 +62,7 @@ class FindPswView(View):
 			mobile = form.cleaned_data.get("mobile")
 			password = form.cleaned_data.get("password")
 			user = Users.objects.get(mobile=mobile)
-			user.password = password
+			user.set_password(password)
 			user.save()
 			return to_json_data(errmsg="密码修改成功")
 

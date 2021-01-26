@@ -4,7 +4,7 @@ $(function () {
     let $mobile = $("#mobile");
     let $smsCodeBtn = $(".form-item .sms-captcha"); //get sms btn
     let $mobileRetuenVal = ""; // this is run mobile_fun return val
-    let $changePsw = $(".register-btn")
+    let $changePsw = $(".form-contain"); // this must use form not btn
 
     generate();
     $img.click(generate);
@@ -135,17 +135,17 @@ $(function () {
         // prevent default submit
         e.preventDefault();
 
-        // check moile
-        if($mobileRetuenVal !== "success"){
-            message.showError("请输入正确的手机号");
-            return;
-        }
-
         // get all val
         let sPassword = $("input[name=password]").val();
         let sPasswordRepeat = $("input[name=password_repeat]").val();
         let sMobile = $mobile.val();
         let sSmsCode = $("input[name=sms_captcha]").val();
+
+        // check moile
+        if($mobileRetuenVal !== "success"){
+            message.showError("请输入正确的手机号");
+            return;
+        }
 
         // check password
         if((!sPassword) || (!sPasswordRepeat)){
@@ -181,8 +181,6 @@ $(function () {
             "sms_code": sSmsCode
         };
 
-        console.log("111")
-        console.log(SdataParams)
         // send ajax
         $.ajax({
             url: "/user/findpwd/",
@@ -205,10 +203,4 @@ $(function () {
             message.showError("服务器超时，请重试")
         })
     })
-
-
-
-
-
-
 });

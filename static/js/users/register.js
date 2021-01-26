@@ -257,6 +257,4 @@ $(function () {
             message.showError("服务器超时，请重试")
         })
     })
-
-
 })
