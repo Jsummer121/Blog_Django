@@ -149,12 +149,15 @@ $(function () {
             if (res.errno === "0") {
                 // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
                 message.showSuccess('短信验证码发送成功');
+                // 设置按钮不可点击
+                $smsCodeBtn.attr('disabled',true);
                 let num = 60;
                 // 设置一个计时器
                 let t = setInterval(function () {
                     if (num === 1) {
                         // 如果计时器到最后, 清除计时器对象
                         clearInterval(t);
+                        $smsCodeBtn.attr('disabled',false);
                         // 将点击获取验证码的按钮展示的文本恢复成原始文本
                         $smsCodeBtn.html("重新发送验证码");
                     } else {

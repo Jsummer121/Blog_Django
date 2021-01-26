@@ -75,9 +75,12 @@ class SmsCode(View):
 			sms_text_flag = "sms_{}".format(mobile).encode('utf8')
 			# 过期时间
 			sms_flag_fmt = 'sms_flag_{}'.format(mobile).encode('utf8')
-			# 存
-			con_redis.setex(sms_text_flag, 300, sms_num)
-			con_redis.setex(sms_flag_fmt, 60, 1)  # 过期时间  1
+
+			# 存 (使用管道进行存储）
+			p1 = con_redis.pipeline()
+			p1.setex(sms_text_flag, 300, sms_num)
+			p1.setex(sms_flag_fmt, 60, 1)  # 过期时间  1
+			p1.execute()  # 触发执行，在这行命令前的代码都不会执行
 
 			# 发送短信
 			logger.info('短信验证码：{}'.format(sms_num))
