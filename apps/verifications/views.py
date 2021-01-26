@@ -11,6 +11,8 @@ from utils.res_code import to_json_data, Code, error_map
 from django_redis import get_redis_connection
 from .forms import FromRegister
 import logging
+from utils.yuntongxun.sms import CCP
+from . import constants
 
 logger = logging.getLogger("django")
 
@@ -26,7 +28,7 @@ class ImageCode(View):
 		## 2.配置key
 		redis_key = "img_{}".format(image_code)
 		## 3.设置过期时间
-		con_redis.setex(redis_key, 300, text)
+		con_redis.setex(redis_key, constants.IMAGE_CODE_REDIS_EXPIRES, text)
 
 		logger.info("IMAGE_CODE {}".format(text))
 		return HttpResponse(content=image, content_type="image/jpg")
@@ -67,7 +69,7 @@ class SmsCode(View):
 		if form.is_valid():
 			mobile = form.cleaned_data.get('mobile')
 			# 生成6位短信验证码
-			sms_num = '%06d' % random.randint(0, 999999)
+			sms_num = '%06d' % random.randint(constants.SMS_CODE_LIT, constants.SMS_CODE_BIG)
 
 			# 构建外键
 			con_redis = get_redis_connection('verify_codes')
@@ -78,8 +80,8 @@ class SmsCode(View):
 
 			# 存 (使用管道进行存储）
 			p1 = con_redis.pipeline()
-			p1.setex(sms_text_flag, 300, sms_num)
-			p1.setex(sms_flag_fmt, 60, 1)  # 过期时间  1
+			p1.setex(sms_text_flag, constants.SMS_CODE_REDIS_EXPIRES, sms_num)
+			p1.setex(sms_flag_fmt, constants.SEND_SMS_CODE_INTERVAL, constants.EXPIRE_VALUE)  # 过期时间  1
 			p1.execute()  # 触发执行，在这行命令前的代码都不会执行
 
 			# 发送短信
@@ -87,7 +89,8 @@ class SmsCode(View):
 
 			# 调用接口发送短信
 			try:
-				result = 0
+				# result = CCP().send_template_sms(mobile, [sms_num, constants.SMS_CODE_TEMP], constants.SMS_CODE_TEMP_ID)
+				result = 0  # 当配置完成以后，就可以直接设置为这个即可，不然每次发送验证码会有点麻烦
 			except Exception as e:
 				logger.error("发送验证码短信[异常][ mobile: %s, message: %s ]" % (mobile, e))
 				return to_json_data(errno=Code.SMSERROR, errmsg=error_map[Code.SMSERROR])

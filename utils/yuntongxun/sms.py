@@ -2,7 +2,7 @@
 
 # 说明：主账号，登陆云通讯网站后，可在"控制台-应用"中看到开发者主账号ACCOUNT SID
 from utils.yuntongxun.CCPRestSDK import REST
-import SDKcode
+from . import SDKcode
 
 _accountSid = SDKcode.pro_accountSid
 

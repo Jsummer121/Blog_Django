@@ -6,6 +6,8 @@ $(function () {
     let $smsCodeBtn = $(".form-item .sms-captcha"); //get sms btn
     let $imageCodeText = $("#input_captcha");  // get image code text
     let $mobileReturnVal = ""; // get mobile return val
+    let $usernameRetuenVal = "";  // get username return val
+    let $register = $(".form-contain"); // get register form
 
 
 
@@ -14,7 +16,7 @@ $(function () {
 
     // blur,触发失去焦点事件
     $username.blur(function () {
-        fn_check_username()
+        $usernameRetuenVal = fn_check_username();
     });
     $mobile.blur(function () {
         $mobileReturnVal = fn_check_mobile();
@@ -46,36 +48,38 @@ $(function () {
     function fn_check_username() {
         // get data
         let $sUsername = $username.val();
+        let sReturnValue = "";
 
         // check data null
         if ($sUsername === ""){
             message.showError("用户名不能为空")
-            return;
+            return sReturnValue;
         }
         // use re to check username
         if (!(/^\w{5,20}$/).test($sUsername)){
             message.showError("请输入5-20为字符的用户名")
-            return;
+            return sReturnValue;
         }
 
         // send ajax report
         $.ajax({
             url: '/username/' + $sUsername + "/",
-
+            async: false, // set ansync(同步)
             type: "GET",
             dataType: "json",
-
         }).done(function (res){// 成功返回的情况下
             if(res.data.count !== 0){
                 message.showError("用户名:" + res.data.username + "已注册，请重新输入")
             }else {
                 message.showSuccess("用户名" + res.data.username + "可以正常使用")
+                sReturnValue = "success";
             }
         }).fail(
             function () {
                 message.showError("服务器超时，请重试！")
             }
         );
+        return sReturnValue;
     }
 
     // check the mobile whether register
@@ -172,5 +176,88 @@ $(function () {
           message.showError('服务器超时，请重试！');
         });
     })
+
+    // register
+    $register.submit(function (e) {
+        // prevent default submit
+        e.preventDefault();
+
+        // get the value of user input
+        let sUsername = $username.val();
+        let sPassword = $("input[name=password]").val();
+        let sPasswordRepeat = $("input[name=password_repeat]").val();
+        let sMobile = $mobile.val();
+        let sSmsCode = $("input[name=sms_captcha]").val();
+        console.log(sUsername,sPassword,sPasswordRepeat,sMobile,sSmsCode)
+
+        // check moble
+        if ($mobileReturnVal !== "success"){
+            return;
+        }
+
+        // check username
+        if ($usernameRetuenVal !== "success"){
+            return;
+        }
+
+        // check pass and pass_re whether null
+        if ((!sPassword) || (!sPasswordRepeat)){
+            message.showError("密码与确认密码不能为空！")
+            return;
+        }
+
+        // check pass and pass_re len
+        if ((sPassword.length < 6 || sPassword.length > 20) ||
+            (sPasswordRepeat.length < 6 || sPasswordRepeat.length > 20)) {
+            message.showError('密码和确认密码的长度需在6～20位以内！');
+            return;
+        }
+
+        // chcek pass and pass_re whether same
+        if (sPassword !== sPasswordRepeat){
+            message.showError("密码和确认密码不一致！");
+            return;
+        }
+
+        // check sms_code len
+        if (!(/^\d{6}$/).test(sSmsCode)) {
+            message.showError('短信验证码格式不正确，必须为6位数字！');
+            return;
+        }
+
+        // request
+        // set request data
+        let SdataParams = {
+            "username": sUsername,
+            "password": sPassword,
+            "password_repeat": sPasswordRepeat,
+            "mobile": sMobile,
+            "sms_code": sSmsCode
+        };
+        // send ajax
+        $.ajax({
+            url: '/user/register/',
+            type:"POST",
+            data: JSON.stringify(SdataParams),
+            // 请求内容的数据类型（前端发给后端的格式）
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+        }).done(function (res) {
+            if(res.errno === "0"){
+                // regitser OK
+                message.showSuccess('恭喜你，注册成功！');
+                setTimeout(() => {
+                // redirect to login page
+                window.location.href = '/user/login/';
+                }, 1500)
+            }else {
+                // register error print errormessage
+                message.showError(res.errmsg);
+            }
+        }).fail(function () {
+            message.showError("服务器超时，请重试")
+        })
+    })
+
 
 })
