@@ -1,6 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 from django.views import View
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 
 import json
 from .forms import RegisterForm, ChangePswForm, LoginForm
@@ -93,3 +93,9 @@ class FindPswView(View):
 				error_map_list.append(item)
 			err_str = "/".join(error_map_list)
 			return to_json_data(errno=Code.PARAMERR, errmsg=err_str)
+
+
+class LogoutView(View):
+	def get(self, request):
+		logout(request)
+		return redirect(reverse("user:login"))
