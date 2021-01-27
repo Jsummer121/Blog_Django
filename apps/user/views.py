@@ -3,16 +3,36 @@ from django.views import View
 from django.contrib.auth import login
 
 import json
-from .forms import RegisterForm, ChangePswForm
+from .forms import RegisterForm, ChangePswForm, LoginForm
 from utils.res_code import to_json_data, Code, error_map
 from .models import Users
 
 
 class LoginView(View):
-    def get(self, request):
-        """
-        """
-        return render(request, 'users/login.html')
+	def get(self, request):
+		return render(request, 'users/login.html')
+
+	def post(self, request):
+		"""
+	    用户名或者手机号
+	    密码
+	    是否记住我
+	    :param request:
+	    :return: to_json_data
+	    """
+		json_data = request.body  # 获取数据
+		if not json_data:  # 判断诗句是否为空
+			return to_json_data(errno=Code.PARAMERR, errmsg=error_map[Code.PARAMERR])
+		dict_data = json.loads(json_data.decode("utf8"))  # 转化成字典格式
+		form = LoginForm(data=dict_data, request=request)
+		if form.is_valid():
+			return to_json_data(errmsg="恭喜你，登陆成功")
+		else:
+			error_map_list = []
+			for item in form.errors.values():
+				error_map_list.append(item[0])
+			err_str = "/".join(error_map_list)
+			return to_json_data(errno=Code.PARAMERR, errmsg=err_str)
 
 
 class RegistarView(View):
@@ -23,6 +43,7 @@ class RegistarView(View):
 	mobile
 	sms_code
 	"""
+
 	def get(self, request):
 		return render(request, "users/register.html")
 

@@ -32,7 +32,6 @@ $(function () {
       message.showError('密码的长度需在6～20位以内');
       return
     }
-
     // 获取用户是否勾许"记住我"，勾许为true，不勾许为false
     let bStatus = $("input[type='checkbox']").is(":checked");  // 获取用户是否选择记住我，勾上代表true，没勾上代码false
 
@@ -61,8 +60,14 @@ $(function () {
           // 注册成功
           message.showSuccess('恭喜你，登录成功！');
           setTimeout(function () {
-            // 注册成功之后重定向到打开登录页面之前的页面
-            window.location.href = document.referrer;
+            // 注册成功之后查看上一个页面，如果是注册页或者是当前页，则直接跳转到主页
+            let refer = document.referrer;
+            if((/user\/register\/$/.test(refer)) || (!refer)){
+              window.location.href = "/"
+            }else{
+              // 如果不是，则直接跳转到上个页面
+              window.location.href = document.referrer;
+            }
           }, 1000)
         } else {
           // 登录失败，打印错误信息
@@ -104,5 +109,4 @@ $(function () {
       }
     }
   });
-
 });
