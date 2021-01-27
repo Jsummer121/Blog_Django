@@ -12,6 +12,7 @@ from django_redis import get_redis_connection
 from .forms import FromRegister
 import logging
 from utils.yuntongxun.sms import CCP
+from celery_task.sms.task import send_sms_code
 from . import constants
 
 logger = logging.getLogger("django")
@@ -85,22 +86,36 @@ class SmsCode(View):
 			p1.execute()  # 触发执行，在这行命令前的代码都不会执行
 
 			# 发送短信
-			logger.info('短信验证码：{}'.format(sms_num))
+			# logger.info('短信验证码：{}'.format(sms_num))
+			# 0. 正常开发情况下
+			logger.info("发送验证码短信[正常][ mobile: %s sms_code: %s]" % (mobile, sms_num))
+			return to_json_data(errmsg='短信发送正常')
 
-			# 调用接口发送短信
-			try:
-				# result = CCP().send_template_sms(mobile, [sms_num, constants.SMS_CODE_TEMP], constants.SMS_CODE_TEMP_ID)
-				result = 0  # 当配置完成以后，就可以直接设置为这个即可，不然每次发送验证码会有点麻烦
-			except Exception as e:
-				logger.error("发送验证码短信[异常][ mobile: %s, message: %s ]" % (mobile, e))
-				return to_json_data(errno=Code.SMSERROR, errmsg=error_map[Code.SMSERROR])
-			else:
-				if result == 0:
-					logger.info("发送验证码短信[正常][ mobile: %s sms_code: %s]" % (mobile, sms_num))
-					return to_json_data(errmsg='短信发送正常')
-				else:
-					logger.warning("发送验证码短信[失败][ mobile: %s ]" % mobile)
-					return to_json_data(errno=Code.SMSFAIL, errmsg=error_map[Code.SMSFAIL])
+			# 2. 使用celery发送短信
+			# # 设置参数
+			# # expires = 300  # 设置过期时间
+			# expires = constants.SMS_CODE_TEMP
+			# # temp_id = 1  # 设置模板格式
+			# temp_id = constants.SMS_CODE_TEMP_ID
+			# send_sms_code.delay(mobile, sms_num, expires, temp_id)
+			# return to_json_data(errmsg="短信验证码发送成功")
+
+
+
+			# 1. 正常的调用接口发送短信
+			# try:
+			# 	# result = CCP().send_template_sms(mobile, [sms_num, constants.SMS_CODE_TEMP], constants.SMS_CODE_TEMP_ID)
+			# 	result = 0  # 当配置完成以后，就可以直接设置为这个即可，不然每次发送验证码会有点麻烦
+			# except Exception as e:
+			# 	logger.error("发送验证码短信[异常][ mobile: %s, message: %s ]" % (mobile, e))
+			# 	return to_json_data(errno=Code.SMSERROR, errmsg=error_map[Code.SMSERROR])
+			# else:
+			# 	if result == 0:
+			# 		logger.info("发送验证码短信[正常][ mobile: %s sms_code: %s]" % (mobile, sms_num))
+			# 		return to_json_data(errmsg='短信发送正常')
+			# 	else:
+			# 		logger.warning("发送验证码短信[失败][ mobile: %s ]" % mobile)
+			# 		return to_json_data(errno=Code.SMSFAIL, errmsg=error_map[Code.SMSFAIL])
 
 		else:
 			err_msg_list = []
