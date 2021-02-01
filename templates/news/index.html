@@ -12,56 +12,12 @@
     <div class="main-contain">
       <!-- banner start -->
         <div class="banner">
-            <ul class="pic">
-                <!--淡入淡出banner-->
-
-
-                <li><a href="javascript:void(0);"><img src="../../static/images/ui.png" alt="test"></a></li>
-
-
-                <li><a href="javascript:void(0);"><img src="../../static/images/youxi.png" alt="test"></a></li>
-
-
-                <li><a href="javascript:void(0);"><img src="../../static/images/dianshang.png" alt="test"></a></li>
-
-
-                <li><a href="javascript:void(0);"><img src="../../static/images/zimeiti.png" alt="test"></a></li>
-
-
-                <li><a href="javascript:void(0);"><img src="../../static/images/python_gui.jpg" alt="test"></a></li>
-
-
-                <li><a href="javascript:void(0);"><img src="../../static/images/linux.jpg" alt="test"></a></li>
-
-
-            </ul>
+            <ul class="pic"></ul>
             <a href="javascript:void(0);" class="btn prev">
                 <i class="PyWhich py-arrow-left"></i></a>
             <a href="javascript:void(0);" class="btn next">
                 <i class="PyWhich py-arrow-right"></i></a>
-            <ul class="tab">
-                <!-- 按钮数量必须和图片一致 -->
-
-
-                <li></li>
-
-
-                <li></li>
-
-
-                <li></li>
-
-
-                <li></li>
-
-
-                <li></li>
-
-
-                <li></li>
-
-
-            </ul>
+            <ul class="tab"></ul>
         </div>
       <!-- banner end -->
 
@@ -69,32 +25,16 @@
       <div class="content">
         <!-- recommend-news start -->
           <ul class="recommend-news">
-              <li>
-                  <a href="https://www.shiguangkey.com/course/2432" target="_blank">
-                      <div class="recommend-thumbnail">
-                          <img src="../../static/images/python_gui.jpg" alt="title">
-                      </div>
-                      <p class="info">Python GUI 教程 25行代码写一个小闹钟</p>
-                  </a>
-              </li>
-
-              <li>
-                  <a href="https://www.shiguangkey.com/course/2432" target="_blank">
-                      <div class="recommend-thumbnail">
-                          <img src="../../static/images/python_advanced.jpg" alt="title">
-                      </div>
-                      <p class="info">python高性能编程方法一</p>
-                  </a>
-              </li>
-
-              <li>
-                  <a href="https://www.shiguangkey.com/course/2432" target="_blank">
-                      <div class="recommend-thumbnail">
-                          <img src="../../static/images/jichujiaochen.jpeg" alt="title">
-                      </div>
-                      <p class="info">python基础 split 和 join函数比较</p>
-                  </a>
-              </li>
+            {% for n in hot_news %}
+            <li>
+                <a href="{% url "news:news_detail" n.id %}" target="_blank">
+                    <div class="recommend-thumbnail">
+                        <img src="{{ n.news.image_url }}" alt="title">
+                    </div>
+                    <p class="info">{{ n.news.title }}</p>
+                </a>
+            </li>
+           {% endfor %}
           </ul>
         <!-- recommend-news end -->
 

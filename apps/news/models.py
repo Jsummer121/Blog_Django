@@ -49,12 +49,18 @@ class Comments(ModelBase):
 
 
 class HotNews(ModelBase):
+    PRI_CHORIES = [
+        (1, "第一级"),
+        (2, "第二级"),
+        (3, "第三级")
+    ]
+    priority = models.IntegerField(choices=PRI_CHORIES, verbose_name="优先级", help_text="优先级")
     news = models.OneToOneField('News', on_delete=models.CASCADE)
-    priority = models.IntegerField(verbose_name="优先级", help_text="优先级")
+
 
     class Meta:
         ordering = ['-update_time', '-id']
-        db_table = "tb_hotnews"  # 指明数据库表名
+        db_table = "tb_hot"  # 指明数据库表名
         verbose_name = "热门新闻"  # 在admin站点中显示的名称
 
     def __str__(self):

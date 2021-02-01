@@ -1,5 +1,5 @@
 from django.db.models import F
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.views import View
 from django.core.paginator import Paginator
@@ -14,7 +14,9 @@ logger = logging.getLogger("django")
 def index(request):
 	# only 把需要的字段添加进去
 	tags = models.Tag.objects.only('id', 'name').filter(is_delete=False)
+	hot_news = models.HotNews.objects.select_related('news').only('news__title', 'news__image_url', 'news_id').filter(is_delete=False).order_by('priority', '-news__clicks')[0:3]
 	return render(request, "news/index.html", locals())
+
 
 
 class NewsListView(View):
@@ -42,7 +44,7 @@ class NewsListView(View):
 		news = news_list.filter(is_delete=False, tag_id=tag_id) or news_list.filter(is_delete=False)
 
 		# 分页  需要两个参数:一个待分页对象和一页的数量
-		page_nt = Paginator(news, 5)
+		page_nt = Paginator(news, 4)
 
 		# 返回当前页数据
 		try:
@@ -72,3 +74,32 @@ class NewsListView(View):
 		}
 
 		return to_json_data(data=data)
+
+
+class NewsDetailView(View):
+	def get(self, request, news_id):
+		news = models.News.objects.select_related('tag', 'author').only('title', 'author__username', 'tag__name', 'content').filter(is_delete=False, id=news_id).first()
+		if news:
+			return render(request, 'news/news_detail.html', context={"news": news})
+		else:
+			return HttpResponseNotFound("<h1>PAGE NOT FOUND</h1>")
+
+
+class BannerView(View):
+	def get(self, request):
+		banners = models.Banner.objects.select_related('news').only('imgs_url', 'news__title', 'news_id').filter(is_delete=False)
+
+		# 序列化输出
+		banner_info = []
+		for i in banners:
+			banner_info.append({
+				"news_title": i.news.title,
+				"news_id": i.news.id,
+				"imgs_url": i.imgs_url,
+			})
+
+		data = {
+			"banners": banner_info
+		}
+		return to_json_data(data=data, )
+
