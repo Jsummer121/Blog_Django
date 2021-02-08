@@ -1,8 +1,10 @@
 from django.db.models import F
 from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from . import models
 import logging
@@ -11,6 +13,17 @@ from utils.res_code import to_json_data, error_map, Code
 logger = logging.getLogger("django")
 
 
+def my_login_required(func):
+	def inner(request):
+		if request.user.is_authenticated:
+			return func(request)
+		else:
+			return redirect("/user/login")
+	return inner
+
+
+# @my_login_required
+# @login_required(login_url='/user/login/')
 def index(request):
 	# only 把需要的字段添加进去
 	tags = models.Tag.objects.only('id', 'name').filter(is_delete=False)
