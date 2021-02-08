@@ -5,6 +5,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views import View
 from user.models import Users
+from django.views.decorators.csrf import ensure_csrf_cookie  # 装饰器来进行csrf验证
+from django.utils.decorators import method_decorator  # 由于不能直接给类视图进行装饰，需要转化一下
 
 from utils.captcha.captcha import captcha
 from utils.res_code import to_json_data, Code, error_map
@@ -57,7 +59,10 @@ class MobileView(View):
 
 
 # 发送短信验证码
+# @method_decorator(ensure_csrf_cookie)
+# @method_decorator(ensure_csrf_cookie, name='dispatch')
 class SmsCode(View):
+	# @ensure_csrf_cookie
 	def post(self, request):
 		" mobile  text  iamge_code_id"
 		json_str = request.body

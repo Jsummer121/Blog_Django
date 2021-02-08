@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django.contrib.auth import login, logout
+from django.views.decorators.csrf import ensure_csrf_cookie  # 装饰器来进行csrf验证
+from django.utils.decorators import method_decorator  # 由于不能直接给类视图进行装饰，需要转化一下
 
 import json
 from .forms import RegisterForm, ChangePswForm, LoginForm
@@ -34,7 +36,7 @@ class LoginView(View):
 			err_str = "/".join(error_map_list)
 			return to_json_data(errno=Code.PARAMERR, errmsg=err_str)
 
-
+# @method_decorator(ensure_csrf_cookie, name='dispatch')
 class RegistarView(View):
 	"""
 	username
