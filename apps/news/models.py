@@ -38,11 +38,23 @@ class Comments(ModelBase):
 
     author = models.ForeignKey('user.Users', on_delete=models.SET_NULL, null=True)
     news = models.ForeignKey('News', on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ['-update_time', '-id']
         db_table = "tb_comments"  # 指明数据库表名
         verbose_name = "评论"  # 在admin站点中显示的名称
+
+    def to_dict(self):
+        comm_dict = {
+            'news_id': self.news_id,
+            'content_id': self.id,
+            'content': self.content,
+            'author': self.author.username,
+            'update_time': self.update_time.strftime('%Y年%m月%d日 %H:%M'),
+            'parent': self.parent.to_dict() if self.parent else None  # 由于父类可能为空，因此需要进行判断
+        }
+        return comm_dict
 
     def __str__(self):
         return '<评论{}>'.format(self.id)
