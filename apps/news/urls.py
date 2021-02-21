@@ -11,4 +11,6 @@ urlpatterns = [
 	path("news/<int:news_id>/", views.NewsDetailView.as_view(), name="news_detail"),
 	path("news/banners/", views.BannerView.as_view(), name="news_banners"),
 	path("news/<int:news_id>/comments/", views.CommentsView.as_view(), name="comments"),
+	# path("indeses", views.es2, name="indeses"),
+	path("search/", views.SearchView.as_view(), name="search")
 ]

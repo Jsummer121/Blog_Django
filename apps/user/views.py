@@ -36,6 +36,7 @@ class LoginView(View):
 			err_str = "/".join(error_map_list)
 			return to_json_data(errno=Code.PARAMERR, errmsg=err_str)
 
+
 # @method_decorator(ensure_csrf_cookie, name='dispatch')
 class RegistarView(View):
 	"""

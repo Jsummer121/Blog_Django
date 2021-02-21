@@ -2,7 +2,7 @@ from django.db.models import F
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.views import View
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -10,6 +10,7 @@ from . import models
 import logging
 import json
 from utils.res_code import to_json_data, error_map, Code
+from elasticsearch import Elasticsearch, helpers
 
 logger = logging.getLogger("django")
 
@@ -173,3 +174,128 @@ class CommentsView(View):
 		news_content.parent_id = parent_id if parent_id else None
 		news_content.save()
 		return to_json_data(data=news_content.to_dict())
+
+
+# 该函数为创建索引
+def es2(request):
+	# 创建连接
+	es = Elasticsearch(["http://127.0.0.1:9200"])
+
+	# 设置映射
+	body = {
+		"mappings": {
+			"properties": {
+				"id": {"type": "long", "index": "false"},
+				 "title": {"type": "text", "analyzer": "ik_smart"},
+				 "digest": {"type": "text", "analyzer": "ik_smart"},
+				 "content": {"type": "text", "analyzer": "ik_smart"},
+				 "image_url": {"type": "keyword"}
+			}
+		},
+		"settings": {
+			"number_of_shards": 2,  # 分片数
+			"number_of_replicas": 0  # 副本数
+		}
+	}
+
+	# 创建索引
+	es.indices.create(index="blog_django", body=body)
+	print("索引创建成功")
+
+	# 批量添加数据
+	# 从模型中获取全部数据
+	query_obj = models.News.objects.all()
+
+	# 将数据进行格式化
+	action = [
+		{
+			"_index": "blog_django",
+			"_source": {
+				"id": i.id,
+				"title": i.title,
+				"digest": i.digest,
+				"content": i.content,
+				"image_url": i.image_url
+			}
+		} for i in query_obj]
+
+	# 批量写入数据
+	helpers.bulk(es, action, request_timeout=1000)
+	print("导入成功")
+	return HttpResponse("ok")
+
+
+# 搜索函数
+class SearchView(View):
+	def get(self, request):
+		kw = request.GET.get("q", "")
+		if kw:
+			show = False
+			page = self.filter_msg(kw, "blog_django")["hits"]["hits"]
+			new_page = []
+			for news in page:
+				p = dict()
+				new = news["highlight"]
+				print(new)
+				p["digest"] = new["digest"][0]
+
+				new = news["_source"]
+				p["title"] = new["title"]
+				p["id"] = new["id"]
+				p["image_url"] = new["image_url"]
+				p["content"] = new["content"]
+				new_page.append(p)
+			paginator = Paginator(new_page, 5)
+		else:
+			show = True
+			host_news = models.HotNews.objects.select_related('news').only('news_id', 'news__title',
+			                                                               'news__image_url').filter(
+				is_delete=False).order_by('priority')
+			paginator = Paginator(host_news, 5)
+
+		try:
+			page = paginator.page(int(self.request.GET.get("page", 1)))
+		# 如果传的不是整数
+		except PageNotAnInteger:
+			# 默认返回第一页的数据
+			page = paginator.page(1)
+		except EmptyPage:
+			page = paginator.page(paginator.num_pages)
+		return render(request, "news/search.html", locals())
+
+	def filter_msg(self, search_msg, search_index):
+		es = Elasticsearch(["http://127.0.0.1:9200"])
+
+		body = {
+		    "query": {
+		    "bool": {
+		      "should": [
+		        {
+		          "match": {
+		            "title": search_msg
+		          }
+		        },{
+		          "match": {
+		            "content": search_msg
+		          }
+		        },{
+		          "match": {
+		            "digest": search_msg
+		          }
+		        }
+		      ]
+		    }
+		  },
+			"size": 200,
+			"sort": [{"_score": {"order": "desc"}}],
+			"highlight": {
+				"pre_tags": ["<font style='color:red;font-size:20px'>"],
+				"post_tags": ["</font>"],
+				"fields": {
+					"title": {"type": "plain"},
+					"digest": {"type": "plain"},
+				}
+			}
+		}
+		res = es.search(index=search_index, body=body)
+		return res
