@@ -228,10 +228,14 @@ def es2(request):
 # 搜索函数
 class SearchView(View):
 	def get(self, request):
+		# 获取前端传递的值
 		kw = request.GET.get("q", "")
+		# 如果值存在
 		if kw:
 			show = False
+			# 使用搜索函数，然后接收返回值
 			page = self.filter_msg(kw, "blog_django")["hits"]["hits"]
+			# 序列化值，不然前端无法进行提取
 			new_page = []
 			for news in page:
 				p = dict()
@@ -245,7 +249,9 @@ class SearchView(View):
 				p["image_url"] = new["image_url"]
 				p["content"] = new["content"]
 				new_page.append(p)
+			# 使用django默认的分页器进行分页
 			paginator = Paginator(new_page, 5)
+		# 如果不存在，则直接将热门新闻返回
 		else:
 			show = True
 			host_news = models.HotNews.objects.select_related('news').only('news_id', 'news__title',
@@ -253,6 +259,7 @@ class SearchView(View):
 				is_delete=False).order_by('priority')
 			paginator = Paginator(host_news, 5)
 
+		# 获取参数中的page
 		try:
 			page = paginator.page(int(self.request.GET.get("page", 1)))
 		# 如果传的不是整数
