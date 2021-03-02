@@ -15,10 +15,10 @@ def doc(request):
 
 class DocDownload(View):
 	def get(self, request, doc_id):
-		doc_file = Docs.objects.only("file_url").filter(is_delete=False,id=doc_id).first()
-		if doc_file:
-			doc_url = doc_file.file_url
-			doc_url = DOC_FILE_URL + doc_url
+		doc_file = Docs.objects.only("file_url").filter(is_delete=False,id=doc_id).first()  # 通过doc_id查询书籍是否存在
+		if doc_file:  # 如果存在
+			doc_url = doc_file.file_url  # 获取书籍的url  /media/流畅的Python.pdf
+			doc_url = DOC_FILE_URL + doc_url  # 进行路径拼接
 
 			# res = HttpResponse(requests.get(doc_url))  # 如果使用这个，可能会产生文件过大而导致系统堵塞
 			res = FileResponse(requests.get(doc_url))  # 分批写入用户的内存，一个批次4096
@@ -29,8 +29,9 @@ class DocDownload(View):
 			if not ex_name:
 				raise Http404("文件名异常")
 			else:
-				ex_name = ex_name.lower()
+				ex_name = ex_name.lower()  # 将格式名小写
 
+			# 设置响应格式
 			if ex_name == 'pdf':
 				res['Content-type'] = 'application/pdf'
 
