@@ -238,9 +238,9 @@ class SearchView(View):
 			# 序列化值，不然前端无法进行提取
 			new_page = []
 			for news in page:
+				# 如果要进行筛选，则可以在前面将所有的值都加入，例如is_selete，如果为True，则跳过，如果不是，则进行下面操作。
 				p = dict()
 				new = news["highlight"]
-				print(new)
 				p["digest"] = new["digest"][0]
 
 				new = news["_source"]

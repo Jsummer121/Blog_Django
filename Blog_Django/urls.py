@@ -21,4 +21,5 @@ from . import settings
 urlpatterns = [path("", include("news.urls")),
                path("user/", include("user.urls")),
                path("", include("verifications.urls")),
+               path("doc/", include("doc.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

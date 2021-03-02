@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'news',
     'user',
     'verifications',
+    'doc',
 ]
 
 MIDDLEWARE = [
@@ -212,3 +213,5 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+DOC_FILE_URL = "http://127.0.0.1:8000"
